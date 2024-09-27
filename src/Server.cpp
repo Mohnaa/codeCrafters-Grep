@@ -1,144 +1,84 @@
 #include <iostream>
 #include <string>
-#include <stack>
+#include <bits/stdc++.h>
+using namespace std;
 
-// Check if input_line contains any digit
-bool matchdigit(const std::string& input_line) {
-    for (char ch : input_line) {
-        if (std::isdigit(ch)) return true;
-    }
-    return false;
-}
-
-// Check if input_line contains any alphanumeric character
-bool matchalphanumeric(const std::string& input_line) {
-    for (char ch : input_line) {
-        if (std::isalnum(ch)) return true;
-    }
-    return false;
-}
-
-// Positive match group function
-bool positiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
-    std::stack<char> s;
-    std::stack<std::pair<char, char>> s_pair;
-
-    if (end >= pattern.size()) end = pattern.size();
-    int idx = start, patternSize = end;
-
-    while (idx < patternSize) {
-        if (idx != patternSize - 1 && pattern[idx] == '-') {
-            idx++;
-            // Logic to handle range match (e.g., 'a-z') can be added here
+bool match_digits(const std::string& inputs, const std::string& pattern) {
+    for (auto input : inputs) {
+        if (isdigit(input)) {
+            return true;
         }
-        // Additional logic can be added here
-        idx++;
     }
     return false;
 }
 
-// Negative match group function
-bool negitiveMatchGroup(const std::string& input_line, const std::string& pattern, int start, int end) {
-    std::stack<char> s;
-    std::stack<std::pair<char, char>> s_pair;
-
-    if (end >= pattern.size()) end = pattern.size();
-    int idx = start + 1, patternSize = end;
-
-    while (idx < patternSize - 1) {
-        if (idx != patternSize - 1 && pattern[idx] == '-') {
-            idx++;
-            // Logic to handle range match can be added here
+bool match_alphanum(const std::string& inputs, const std::string& pattern) {
+    for (auto c : inputs) {
+        if (isalnum(c)) {
+            return true;
         }
-        // Additional logic can be added here
-        idx++;
     }
-    return true;
-}
-
-// General pattern matching function
-bool match(const std::string& input_line, const std::string& pattern) {
-    int i = 0;
-
-    while (i < input_line.size()) {
-        int j = 0;
-        int temp = i;
-
-        while (j < pattern.size() && temp < input_line.size()) {
-            if (pattern[j] == '\\') {
-                j++;
-                if (j < pattern.size()) {
-                    if (pattern[j] == 'd') { // digit
-                        if (!isdigit(input_line[temp])) break;
-                        else temp++;
-                    } else if (pattern[j] == 'w') { // alphanumeric
-                        if (!isalnum(input_line[temp])) break;
-                        else temp++;
-                    } else if (pattern[j] == '[') { // character class
-                        int start = j;
-                        while (j < pattern.size() && pattern[j] != ']') j++;
-
-                        if (pattern[start + 1] == '^') {
-                            return negitiveMatchGroup(input_line, pattern, start, j + 1);
-                        } else {
-                            return positiveMatchGroup(input_line, pattern, start, j + 1);
-                        }
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                if (input_line[temp] != pattern[j]) break;
-                else temp++;
-            }
-            j++;
-        }
-        if (j == pattern.size()) return true;
-        i++;
-    }
-
     return false;
 }
 
-// Top-level pattern matching function
+bool match_group(const string& input_line, const string& pattern) {
+    return input_line.find_first_of(pattern) != string::npos;
+    // returns the position of the first occurrence of any character that is present in the argument string
+}
+
 bool match_pattern(const std::string& input_line, const std::string& pattern) {
-    if (pattern.length() == 1) {
-        return input_line.find(pattern) != std::string::npos;
-    } else if (pattern[0] == '[' && pattern[pattern.length() - 1] == ']') {
-        if (pattern[1] == '^') {
-            return negitiveMatchGroup(input_line, pattern, 0, pattern.size());
-        } else {
-            return positiveMatchGroup(input_line, pattern, 0, pattern.size());
+    if (pattern.size() == 0) return true;
+    if (input_line.size() == 0) return false;
+
+    if (pattern.substr(0, 2) == "\\d") {
+        if (isdigit(input_line[0])) {
+            return match_pattern(input_line.substr(1), pattern.substr(2));
         }
-    } else if (pattern.length() > 1) {
-        return match(input_line, pattern);
-    } else {
-        throw std::runtime_error("Unhandled pattern: " + pattern);
+        return match_pattern(input_line.substr(1), pattern);
+    } else if (pattern.substr(0, 2) == "\\w") {
+        if (isalnum(input_line[0])) {
+            return match_pattern(input_line.substr(1), pattern.substr(2));
+        }
+        return match_pattern(input_line.substr(1), pattern);
+    } else if (pattern[0] == '[') {
+        auto first = pattern.find(']');
+        bool neg = pattern[1] == '^';
+        if (neg) {
+            if (!match_group(input_line, pattern.substr(2, first - 2))) {
+                return match_pattern(input_line.substr(1), pattern.substr(first + 1));
+            }
+            return false;
+        }
+        if (match_group(input_line, pattern.substr(1, first - 1))) {
+            return match_pattern(input_line.substr(1), pattern.substr(first + 1));
+        } else {
+            return false;
+        }
     }
+
+    if (pattern[0] == input_line[0]) {
+        return match_pattern(input_line.substr(1), pattern.substr(1));
+    }
+    return match_pattern(input_line.substr(1), pattern);
+}
+
+bool match_patterns(string input_line, string pattern) {
+    do {
+        if (match_pattern(input_line, pattern)) {
+            return true;
+        }
+        input_line = input_line.substr(1); // move 1 step further
+    } while (input_line != "");
+    return false;
 }
 
 int main(int argc, char* argv[]) {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
-    std::cout << "Logs from your program will appear here" << std::endl;
-
-    if (argc != 3) {
-        std::cerr << "Expected two arguments" << std::endl;
-        return 1;
-    }
-
-    std::string flag = argv[1];
-    std::string pattern = argv[2];
-
-    if (flag != "-E") {
-        std::cerr << "Expected first argument to be '-E'" << std::endl;
-        return 1;
-    }
-
-    std::string input_line;
+    string input_line;
     std::getline(std::cin, input_line);
 
+    string pattern = "\\d"; // Example pattern, you can change it as needed
     try {
-        if (match_pattern(input_line, pattern)) {
+        if (match_patterns(input_line, pattern)) {
             return 0;
         } else {
             return 1;
