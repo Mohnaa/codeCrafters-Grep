@@ -61,6 +61,15 @@ bool match_pattern_rec(const std::string& text, const std::string& pattern) {
         }
     }
 
+    if (pattern.size() > 1 && pattern[1] == '?') {
+        if (pattern[0] == text[0]) {
+            return match_pattern_rec(text.substr(1), pattern.substr(2)) ||
+                   match_pattern_rec(text, pattern.substr(2));
+        } else {
+            return match_pattern_rec(text, pattern.substr(2));
+        }
+    }
+
     if (pattern[0] == text[0]) {
         return match_pattern_rec(text.substr(1), pattern.substr(1));
     } else {
