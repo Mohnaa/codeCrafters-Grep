@@ -1,28 +1,44 @@
 #include <iostream>
 #include <string>
-
 bool match_pattern(const std::string &input_line, const std::string &pattern) {
   if (pattern.length() == 1) {
     return input_line.find(pattern) != std::string::npos;
   } else if (pattern == "\\d") {
-    return input_line.find_first_of("123456890") != std::string::npos;
+    for (char c : input_line) {
+      if (std::isdigit(c)) {
+        return true;
+      }
+    }
+    return false;
   } else if (pattern == "\\w") {
-        for (const auto &l : input_line) {
-            if (std::isdigit(l) || std::isalpha(l)) {
-                return true;
-            }
+    for (char c : input_line) {
+      if (std::isalpha(c)) {
+        return true;
+      }
+    }
+    return false;
+  } else if (pattern[0] == '[' && pattern[pattern.size() - 1] == ']') {
+    for (char c : pattern) {
+      for (char d : input_line) {
+        if (c == d) {
+          return true;
         }
-        return false;
-    } else if (pattern.at(0) == '[' && pattern.at(pattern.length() - 1) == ']') {
-        for (const auto &l : pattern.substr(1, pattern.length() - 2)) {
-            if (input_line.find(l) != std::string::npos) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-    throw std::runtime_error("Unhandled pattern " + pattern);}
+    bool negate = pattern[1] == '^';
+    std::string chars_to_match =
+        pattern.substr(negate ? 2 : 1, pattern.size() - (negate ? 3 : 2));
+    for (const auto &c : input_line) {
+      if (chars_to_match.find(c) != std::string::npos && !negate) {
+        return true;
+      } else if (chars_to_match.find(c) == std::string::npos && negate) {
+        return true;
+      }
+    }
+    return false;
+  } else {
+    throw std::runtime_error("Unhandled pattern " + pattern);
+  }
 }
+
 
 int main(int argc, char* argv[]) {
     // Flush after every std::cout / std::cerr
