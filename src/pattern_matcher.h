@@ -1,4 +1,5 @@
-// #include "pattern_matcher.h"
+#include <string>
+// #include "pattern_matcher.h" // Removed self-referential include
 
 bool contains_any(const std::string& text, const std::string& chars) {
     return text.find_first_of(chars) != std::string::npos;
@@ -10,6 +11,15 @@ bool starts_with(const std::string& text, const std::string& prefix) {
 
 bool ends_with(const std::string& text, const std::string& suffix) {
     return text.rfind(suffix) == text.size() - suffix.size();
+}
+
+bool match_alternation(const std::string& text, const std::string& pattern) {
+    auto pos = pattern.find('|');
+    if (pos != std::string::npos) {
+        return match_pattern_rec(text, pattern.substr(0, pos)) ||
+               match_pattern_rec(text, pattern.substr(pos + 1));
+    }
+    return match_pattern_rec(text, pattern);
 }
 
 bool match_pattern_rec(const std::string& text, const std::string& pattern) {
@@ -68,6 +78,18 @@ bool match_pattern_rec(const std::string& text, const std::string& pattern) {
         } else {
             return match_pattern_rec(text, pattern.substr(2));
         }
+    }
+
+
+    if (pattern[0] == '.') {
+        return match_pattern_rec(text.substr(1), pattern.substr(1));
+    }
+
+
+    if (pattern[0] == '(') {
+        auto closing_paren = pattern.find(')');
+        return match_alternation(text, pattern.substr(1, closing_paren - 1)) &&
+               match_pattern_rec(text.substr(1), pattern.substr(closing_paren + 1));
     }
 
     if (pattern[0] == text[0]) {
