@@ -60,8 +60,11 @@ bool match_here(const std::string& regex, const std::string& text) {
     // If the text is empty, no more matches possible
     if (text.empty()) return false;
 
-    // Add more conditions here to handle other cases like character classes, etc.
-    
+    // Handle literal character matching
+    if (regex[0] == text[0]) {
+        return match_here(regex.substr(1), text.substr(1));
+    }
+
     return false;
 }
 
