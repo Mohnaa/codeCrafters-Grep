@@ -36,7 +36,7 @@ bool alternate(const std::string& regex, const std::string& text) {
     if (close_bracket_pos == std::string::npos || pipe_pos == std::string::npos) {
         throw std::runtime_error("Invalid regex");
     }
-    
+
     // Extract alternates
     std::string alter1 = regex.substr(0, pipe_pos);
     std::string alter2 = regex.substr(pipe_pos + 1, close_bracket_pos - pipe_pos - 1);
@@ -60,7 +60,7 @@ bool match_here(const std::string& regex, const std::string& text) {
     // If the text is empty, no more matches possible
     if (text.empty()) return false;
 
-    // Handle literal character matching
+    // Handle literal character matching, including spaces
     if (regex[0] == text[0]) {
         return match_here(regex.substr(1), text.substr(1));
     }
