@@ -41,9 +41,10 @@ bool match_here(const std::string& regex, const std::string& text) {
     if (text.empty()) {
         return regex.empty() || (regex.size() == 2 && regex[1] == '?');
 
-        if (regex[0] == '[' && match_group(regex.substr(1), std::string(1, text[i]))) {
+        if (regex[0] == '[' && match_group(regex.substr(1), std::string(1, text[0]))) {
             return true;
         }
+        size_t i = 0;
         if (regex[0] == '(' && alternate(regex.substr(1), text.substr(i))) {
             return true;
         }
