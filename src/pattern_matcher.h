@@ -1,5 +1,4 @@
 #include <string>
-// #include "pattern_matcher.h" // Removed self-referential include
 
 bool contains_any(const std::string& text, const std::string& chars) {
     return text.find_first_of(chars) != std::string::npos;
